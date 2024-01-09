@@ -1,0 +1,5 @@
+172.19.0.1 - - [08/Jan/2024:08:08:33 +0000] "GET / HTTP/1.1" 200 21 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" "-"
+172.19.0.1 - - [08/Jan/2024:15:54:13 +0000] "GET / HTTP/1.1" 200 21 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" "-"
+172.19.0.1 - - [08/Jan/2024:15:55:11 +0000] "GET /api HTTP/1.1" 404 22 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" "-"
+172.19.0.1 - - [08/Jan/2024:15:55:20 +0000] "GET /api/hogehoge HTTP/1.1" 200 22 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" "-"
+172.19.0.1 - - [08/Jan/2024:15:55:30 +0000] "GET /api/3 HTTP/1.1" 200 15 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" "-"

@@ -1,0 +1,50 @@
+version: "3.0"
+
+
+services:
+  python311:
+    build:
+      context: ./
+      dockerfile: "./docker/python/Dockerfile"
+    container_name: "portfolio"
+    working_dir: /var/www/app
+    restart: always
+    volumes:
+      - ./src:/var/www/app/src
+    expose:
+      - "8080"
+  nginx:
+     image: nginx:1.21-alpine
+     container_name: "app_nginx"
+     # NginxのDockerfileをビルドする
+     build:
+       # ビルドコンテキストはカレントディレクトリ
+       context: ./
+       dockerfile: "./docker/nginx/Dockerfile"
+     volumes:
+       - ./docker/nginx/conf:/etc/nginx/conf.d
+       - ./docker/nginx/log:/var/log/nginx
+     restart: always
+     depends_on:
+       - python311
+     ports:
+       - "8080:80"
+     links:
+       - python311
+  node:
+    # コンテナ名を指定
+    container_name: node
+    # docker image を作成するときの指示をするファイル(Dockerfile)の場所を指定
+    build:
+      context: .
+      dockerfile: ./docker/node/Dockerfile
+    # こうしておくことで後で3000ポートからアクセスすることが可能になる。
+    ports:
+      - 5173:5173
+    # docker 内のディレクトリと同期させるディレクトリを指定。
+    # ディレクトリが存在しない場合は勝手に作成される。
+    volumes:
+      - ./app/node:/app
+    # tty: true とすることによりコンテナを継続させる。以下URLを参照。 
+    # https://zenn.dev/hohner/articles/43a0da20181d34
+    tty: true
