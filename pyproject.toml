@@ -10,6 +10,13 @@ python = "^3.11"
 fastapi = "^0.108.0"
 uvicorn = "^0.25.0"
 requests = "^2.31.0"
+python-multipart = "^0.0.6"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+motor = "^3.3.2"
+pymongo = {extras = ["srv"], version = "^4.6.1"}
+python-decouple = "^3.8"
+fastapi-csrf-protect = "^0.3.3"
 
 
 [build-system]
