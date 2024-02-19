@@ -1,24 +1,27 @@
 from fastapi import APIRouter, Depends, HTTPException, Response, Request, status, Query, Path, Cookie, Body
 from fastapi.encoders import jsonable_encoder
-from ..schema import Todo, TodoBody, SuccessMsg
+from ..schema import Todo, TodoBody, SuccessMsg, User, UserResponse
 from typing import List
 from ..database import db_create_todo, db_get_all_todo, db_get_single_todo, db_update_todo, db_delete_todo
-
+from fastapi_csrf_protect import CsrfProtect
+from fastapi_csrf_protect.exceptions import CsrfProtectError
+from .route_auth import get_current_user
 router = APIRouter()
 
 
 @router.post('/api/todo', response_model=Todo)
-async def create_todo(request: Request, Response: Response, data: TodoBody):
+async def create_todo(request: Request, response: Response, data: TodoBody, csrf_protect: CsrfProtect = Depends()):
+    await csrf_protect.validate_csrf(request)
     todo = jsonable_encoder(data)
     res = await db_create_todo(todo)
     if res:
-        Response.status_code = status.HTTP_201_CREATED
+        response.status_code = status.HTTP_201_CREATED
         return res
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='create task failed')
 
 
 @router.get('/api/todo', response_model=List[Todo])
-async def get_todo_list():
+async def get_todo_list(request: Request, current_user: UserResponse = Depends(get_current_user)):
     res = await db_get_all_todo()
     return res
 
