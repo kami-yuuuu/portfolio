@@ -28,7 +28,7 @@ services:
      depends_on:
        - python311
      ports:
-       - "8080:80"
+       - "80:80"
      links:
        - python311
   node:
