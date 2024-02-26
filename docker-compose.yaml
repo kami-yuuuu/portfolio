@@ -28,7 +28,7 @@ services:
      depends_on:
        - python311
      ports:
-       - "80:80"
+       - "80:443"
      links:
        - python311
   node:
@@ -40,7 +40,7 @@ services:
       dockerfile: ./docker/node/Dockerfile
     # こうしておくことで後で3000ポートからアクセスすることが可能になる。
     ports:
-      - 5173:5173
+      - "5173:5173"
     # docker 内のディレクトリと同期させるディレクトリを指定。
     # ディレクトリが存在しない場合は勝手に作成される。
     volumes:
