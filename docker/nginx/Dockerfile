@@ -4,6 +4,6 @@ FROM nginx:1.21-alpine
 COPY docker/nginx/conf/default.conf /etc/nginx/conf.d/default.conf
 
 
-COPY ssl/server.crt /etc/nginx/ssl/server.crt
-COPY ssl/server.key /etc/nginx/ssl/server.key
-COPY ssl/server.password /etc/nginx/ssl/server.password
+COPY docker/nginx/ssl/server.crt /etc/nginx/ssl/server.crt
+COPY docker/nginx/ssl/server.key /etc/nginx/ssl/server.key
+COPY docker/nginx/ssl/server.password /etc/nginx/ssl/server.password
