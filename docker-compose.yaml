@@ -24,6 +24,7 @@ services:
      volumes:
        - ./docker/nginx/conf:/etc/nginx/conf.d
        - ./docker/nginx/log:/var/log/nginx
+       - /home/ubuntu/ssl:/etc/ssl
      restart: always
      depends_on:
        - python311
