@@ -11,7 +11,7 @@ class Transaction(SQLModel, table=True):
     category: Category  = Relationship(back_populates="transactions")
     amount: Numeric = Field(description="金額", sa_column=Column(Numeric(12, 2)))
     memo: Optional[str] = None
-    payment_method_pk: str = Field(default=None, foreign_key="paymentmethod.pk", description="支払い方法")
+    payment_method_id: int = Field(default=None, foreign_key="paymentmethod.id", description="支払い方法")
     repeat: Optional[JSON] = Field(default=None, description="繰り返し設定", sa_column=Column(JSON))
     receipt_url: Optional[str] = Field(default=None, description="レシート画像のURL")
     created_at: Optional[datetime] = Field(default=None, sa_column=Column(DateTime(timezone=True), server_default=func.now()), description="作成日時")

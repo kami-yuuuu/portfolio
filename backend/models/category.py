@@ -10,3 +10,5 @@ class Category(SQLModel, table=True):
     type: str = Field(description="取引の分類（収入/支出など）")
     color:str = Field(default="#FFFFFF", description="カテゴリの色を表す16進カラーコード", unique=True)
     transactions: list[Transaction] = Relationship(back_populates="categories")
+    created_at: Optional[str] = Field(default=None, description="作成日時")
+    updated_at: Optional[str] = Field(default=None, description="更新日時")
