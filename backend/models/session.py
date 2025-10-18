@@ -1,5 +1,8 @@
 from sqlmodel import SQLModel, create_engine
 from .category import Category
+from .transaction import Transaction
+from .payment_method import PaymentMethod
+
 import os
 
 
