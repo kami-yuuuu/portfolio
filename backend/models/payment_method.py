@@ -1,7 +1,6 @@
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import SQLModel, Field
 from sqlalchemy import Column, DateTime, func
-from typing import List, Optional
-from .transaction import Transaction
+from typing import Optional
 
 
 class PaymentMethod(SQLModel, table=True):
