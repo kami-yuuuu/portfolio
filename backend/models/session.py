@@ -1,12 +1,10 @@
 from sqlmodel import SQLModel, create_engine
-from .category import Category
-from .transaction import Transaction
-from .payment_method import PaymentMethod
+from . import transaction, category, payment_method
 
 import os
 
 
-postgres_url:str =os.getenv("DATABASE_URL",default="postgresql://postgres::password@db:5432/postgresdb")
+postgres_url:str =os.getenv("DATABASE_URL",default="postgresql://postgres:password@db:5432/postgresdb")
 
 engine = create_engine(postgres_url, echo=True)
 
