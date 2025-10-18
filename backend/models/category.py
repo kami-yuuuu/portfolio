@@ -9,4 +9,4 @@ class Category(SQLModel, table=True):
     name:str = Field(description="カテゴリの名前", unique=True)
     type: str = Field(description="取引の分類（収入/支出など）")
     color:str = Field(default="#FFFFFF", description="カテゴリの色を表す16進カラーコード", unique=True)
-    transactions: list["Transaction"] = Relationship(back_populates="category")
+    transactions: list[Transaction] = Relationship(back_populates="categories")
