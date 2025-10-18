@@ -9,10 +9,10 @@ from .category import Category
 class Transaction(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     date: dates = Field(description="取引日")
-    categorys: List["Category"]  = Relationship(back_populates="transactions")
+    categorys: Category  = Relationship(back_populates="transaction")
     amount: Decimal = Field(description="金額")
     memo: Optional[str] = None
-    payment_method_name: str = Field(default=None, foreign_key="paymentmethod.name", description="支払い方法")
+    payment_method_pk: str = Field(default=None, foreign_key="paymentmethod.pk", description="支払い方法")
     repeat: Optional[Dict] = Field(default=None, description="繰り返し設定", sa_column=Column(JSON))
-    recipt_url: Optional[str] = Field(default=None, description="レシート画像のURL")
+    receipt_url: Optional[str] = Field(default=None, description="レシート画像のURL")
     created_at: Optional[datetime] = Field(default=None, sa_column=Column(DateTime(timezone=True), server_default=func.now()), description="作成日時")
