@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
 
 # Pythonの依存関係をコピーしてインストール
 COPY . .
-RUN pip install --no-cache-dir .
+RUN pip install --no-cache-dir pyproject.toml
 
 # アプリケーションコードをコピー
 

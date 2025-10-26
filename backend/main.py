@@ -13,9 +13,3 @@ async def read_item(item_id:int):
 async def return_health():
     return {"status": "ok"}
 
-
-    
-
-
-
-
