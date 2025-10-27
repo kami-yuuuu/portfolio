@@ -7,8 +7,21 @@ from datetime import datetime
 if TYPE_CHECKING:
     from .transaction import Transaction
 
+class BasePaymentMethod(SQLModel):
+    """
+    支払い方法の基本モデル
+    支払い方法に共通する属性を定義する
 
-class PaymentMethod(SQLModel, table=True):
+    Attributes:
+        name (str): 支払い方法の名前
+        description (Optional[str]): 支払い方法の説明
+    """
+
+    name: str = Field(description="支払い方法の名前")
+    description: Optional[str] = Field(default=None, description="支払い方法の説明")
+
+
+class PaymentMethod(BasePaymentMethod, table=True):
     """
     支払い方法を表すモデル
     クレジットカード、現金、電子マネーなどの支払い手段を管理する
@@ -23,10 +36,41 @@ class PaymentMethod(SQLModel, table=True):
     """
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    name: str = Field(description="支払い方法の名前")
-    description: Optional[str] = Field(default=None, description="支払い方法の説明")
     transactions: List['Transaction'] = Relationship(back_populates="payment_method")
     created_at: Optional[datetime] = Field(default=None, description="作成日時", sa_column=Column(DateTime(timezone=True), server_default=func.now()))
     updated_at: Optional[datetime] = Field(default=None, description="更新日時", sa_column=Column(DateTime(timezone=True), onupdate=func.now()))
+
+
+
+class PaymentMethodCreate(SQLModel):
+    """
+    支払い方法作成用モデル
+    新しい支払い方法を作成するためのデータ構造を定義する
+
+    Attributes:
+        name (str): 支払い方法の名前
+        description (Optional[str]): 支払い方法の説明
+    """
+
+    name: str = Field(description="支払い方法の名前")
+    description: Optional[str] = Field(default=None, description="支払い方法の説明")
+
+
+class PaymentMethodRead(BasePaymentMethod):
+    """
+    支払い方法読み取り用モデル
+    支払い方法の情報を取得するためのデータ構造を定義する
+
+    Attributes:
+        id (int): 支払い方法の一意の識別子
+        name (str): 支払い方法の名前
+        description (Optional[str]): 支払い方法の説明
+        created_at (Optional[datetime]): 作成日時
+        updated_at (Optional[datetime]): 更新日時
+    """
+
+    id: int = Field(description="支払い方法の一意の識別子")
+    name: str = Field(description="支払い方法の名前")
+    description: Optional[str] = Field(default=None, description="支払い方法の説明")
 
 
