@@ -1,6 +1,6 @@
 from sqlmodel import SQLModel, Field, Relationship
 from sqlalchemy import Column, DateTime, func
-from typing import List, Optional , TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING
 from datetime import datetime
 
 # 循環参照を避けて型ヒントを提供するための条件付きインポート
@@ -17,7 +17,7 @@ class BasePaymentMethod(SQLModel):
         description (Optional[str]): 支払い方法の説明
     """
 
-    name: str = Field(description="支払い方法の名前")
+    name: str = Field(description="支払い方法の名前", unique=True)
     description: Optional[str] = Field(default=None, description="支払い方法の説明")
 
 
@@ -41,36 +41,18 @@ class PaymentMethod(BasePaymentMethod, table=True):
     updated_at: Optional[datetime] = Field(default=None, description="更新日時", sa_column=Column(DateTime(timezone=True), onupdate=func.now()))
 
 
-
-class PaymentMethodCreate(SQLModel):
+class PaymentMethodCreate(BasePaymentMethod):
     """
     支払い方法作成用モデル
-    新しい支払い方法を作成するためのデータ構造を定義する
-
-    Attributes:
-        name (str): 支払い方法の名前
-        description (Optional[str]): 支払い方法の説明
     """
-
-    name: str = Field(description="支払い方法の名前")
-    description: Optional[str] = Field(default=None, description="支払い方法の説明")
+    pass
 
 
-class PaymentMethodRead(BasePaymentMethod):
+class PaymentMethodUpdate(SQLModel):
     """
-    支払い方法読み取り用モデル
-    支払い方法の情報を取得するためのデータ構造を定義する
-
-    Attributes:
-        id (int): 支払い方法の一意の識別子
-        name (str): 支払い方法の名前
-        description (Optional[str]): 支払い方法の説明
-        created_at (Optional[datetime]): 作成日時
-        updated_at (Optional[datetime]): 更新日時
+    支払い方法更新用モデル
     """
-
-    id: int = Field(description="支払い方法の一意の識別子")
-    name: str = Field(description="支払い方法の名前")
-    description: Optional[str] = Field(default=None, description="支払い方法の説明")
+    name: Optional[str] = None
+    description: Optional[str] = None
 
 

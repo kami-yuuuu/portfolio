@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 # 作業ディレクトリを設定
 WORKDIR /app
@@ -9,11 +9,15 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Pythonの依存関係をコピーしてインストール
-COPY . .
-RUN pip install --no-cache-dir pyproject.toml
+# 依存関係ファイルをコピーしてインストール
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 # アプリケーションコードをコピー
+COPY ./src /app/src
+
+# PYTHONPATHを設定してsrcディレクトリ内のモジュールをインポート可能にする
+ENV PYTHONPATH=/app/src
 
 # 非rootユーザーを作成
 RUN useradd --create-home --shell /bin/bash app \
