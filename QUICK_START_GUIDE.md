@@ -72,7 +72,7 @@ curl -X POST "http://localhost:8000/payment_methods/" \
 curl -X POST "http://localhost:8000/transactions/" \
   -H "Content-Type: application/json" \
   -d '{
-    "date": "2024-01-08",
+    "date": "2026-01-08",
     "category_id": 1,
     "amount": 1500.00,
     "memo": "ランチ代",
@@ -183,7 +183,7 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ### Transaction（取引）
 ```json
 {
-  "date": "2024-01-08",
+  "date": "2026-01-08",
   "category_id": 1,
   "amount": 1500.00,
   "memo": "ランチ代",

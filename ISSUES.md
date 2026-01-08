@@ -143,8 +143,10 @@ environment:
 
 一方、session.py では:
 ```python
-postgres_url = os.getenv("DATABASE_URL", 
-    default="postgresql://postgres:password@db:5432/postgresdb")
+postgres_url = os.getenv(
+    "DATABASE_URL",
+    default="postgresql://postgres:password@db:5432/postgresdb"
+)
 ```
 
 デフォルト値が異なる。
