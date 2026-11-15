@@ -1,217 +1,109 @@
-# Portfolio Application
+# 家計簿アプリ（バックエンド）
 
-A modern portfolio application built with FastAPI, React, Docker, and Kubernetes.
+FastAPI・SQLModel・PostgreSQL で実装した、家計簿アプリのバックエンドAPIです。現在は取引・カテゴリ・支払い方法のCRUD APIを提供しています。リポジトリ名は `portfolio` ですが、ポートフォリオアプリではありません。
 
-## Architecture
+> **開発段階:** 試作段階です。テスト環境、DBマイグレーション、認証、フロントエンドは未整備です。本番環境での利用を想定した状態ではありません。
 
-- **Backend**: FastAPI (Python)
-- **Frontend**: React (TypeScript)
-- **Database**: PostgreSQL
-- **Containerization**: Docker
-- **Orchestration**: Kubernetes
+## 実装済みの機能
 
-## Project Structure
+- 取引（Transaction）の作成・一覧・詳細・更新・削除
+- カテゴリ（Category）の作成・一覧・詳細・更新・削除
+- 支払い方法（PaymentMethod）の作成・一覧・詳細・更新・削除
+- `GET /health` によるヘルスチェック
+- FastAPIが生成するAPIドキュメント
 
-```
-portfolio/
-├── backend/              # FastAPI backend
-│   ├── main.py          # メインアプリケーション
-│   ├── config.py        # 設定管理
-│   ├── database.py      # データベース接続
-│   ├── models.py        # SQLAlchemyモデル
-│   ├── schemas.py       # Pydanticスキーマ
-│   ├── crud.py          # CRUD操作
-│   ├── auth.py          # 認証機能
-│   ├── requirements.txt # Python依存関係
-│   ├── Dockerfile       # バックエンド用Dockerfile
-│   └── env.example      # 環境変数例
-├── frontend/            # React frontend
-│   └── package.json     # Node.js依存関係
-├── k8s/                 # Kubernetes manifests
-│   ├── shared/          # 共有リソース
-│   │   ├── namespace.yaml
-│   │   ├── configmap.yaml
-│   │   ├── secret.yaml
-│   │   ├── ingress.yaml
-│   │   ├── postgres-deployment.yaml
-│   │   ├── postgres-service.yaml
-│   │   ├── postgres-pvc.yaml
-│   │   ├── redis-deployment.yaml
-│   │   └── redis-service.yaml
-│   ├── backend/        # バックエンド用リソース
-│   │   ├── deployment.yaml
-│   │   └── service.yaml
-│   ├── frontend/       # フロントエンド用リソース
-│   │   ├── deployment.yaml
-│   │   └── service.yaml
-│   ├── deploy.sh       # デプロイスクリプト
-│   └── cleanup.sh      # クリーンアップスクリプト
-├── docker-compose.yml   # Docker Compose設定
-└── README.md
-```
+認証、ユーザー管理、集計・レポート、レシート画像のアップロード、フロントエンドは実装されていません。
 
-## Features
+## 技術構成
 
-### Backend API
-- **Projects**: プロジェクト管理（CRUD操作）
-- **About**: プロフィール情報管理
-- **Skills**: スキル管理
-- **Contacts**: お問い合わせ管理
-- **Authentication**: JWT認証
-- **Database**: PostgreSQL with SQLAlchemy
-- **Cache**: Redis for caching
+- Python 3.11+
+- FastAPI、SQLModel / SQLAlchemy
+- PostgreSQL 16
+- Docker Compose
 
-### API Endpoints
-- `GET /` - ルートエンドポイント
-- `GET /health` - ヘルスチェック
-- `GET /api/projects` - プロジェクト一覧
-- `GET /api/projects/{id}` - プロジェクト詳細
-- `POST /api/projects` - プロジェクト作成（認証必要）
-- `PUT /api/projects/{id}` - プロジェクト更新（認証必要）
-- `DELETE /api/projects/{id}` - プロジェクト削除（認証必要）
-- `GET /api/about` - プロフィール情報
-- `PUT /api/about` - プロフィール更新（認証必要）
-- `GET /api/skills` - スキル一覧
-- `POST /api/skills` - スキル作成（認証必要）
-- `GET /api/contacts` - お問い合わせ一覧（認証必要）
-- `POST /api/contacts` - お問い合わせ送信
+## 起動方法（Docker Compose）
 
-## Quick Start
-
-### 1. Development with Docker Compose
+Docker と Docker Compose がインストールされていることを確認し、リポジトリのルートで実行します。
 
 ```bash
-# アプリケーションを起動
-docker-compose up --build
-
-# バックグラウンドで起動
-docker-compose up -d --build
+docker compose up --build
 ```
 
-**Services:**
-- Backend API: http://localhost:8000
-- Frontend: http://localhost:3000
-- API Documentation: http://localhost:8000/docs
-- PostgreSQL: localhost:5432
-- Redis: localhost:6379
-
-### 2. Kubernetes Deployment
+APIとデータベースが起動したら、**初回のみ**テーブルを作成します。
 
 ```bash
-# デプロイ
-./k8s/deploy.sh
-
-# クリーンアップ
-./k8s/cleanup.sh
+docker compose exec backend python -m models.session create
 ```
 
-**Access:**
-- Frontend: http://portfolio.local (Ingress経由)
-- Backend API: http://portfolio.local/api
+アクセス先:
 
-### 3. Manual Kubernetes Deployment
+- APIドキュメント: <http://localhost:8000/docs>
+- ヘルスチェック: <http://localhost:8000/health>
+- PostgreSQL: `localhost:5432`
+
+停止するには `Ctrl+C` を押します。バックグラウンドで起動した場合は `docker compose down` を実行してください。
+
+ComposeのDB接続情報は開発用です。`docker-compose.yml` に設定されている認証情報を本番環境で使用しないでください。
+
+## APIエンドポイント
+
+各リソースは一覧・詳細取得、作成、部分更新、削除のエンドポイントを持ちます。
+
+| リソース | エンドポイント |
+| --- | --- |
+| 取引 | `/transactions/`、`/transactions/{transaction_id}` |
+| カテゴリ | `/categories/`、`/categories/{category_id}` |
+| 支払い方法 | `/payment_methods/`、`/payment_methods/{payment_method_id}` |
+| ヘルスチェック | `/health` |
+
+一覧・詳細取得は `GET`、作成は `POST`、部分更新は `PATCH`、削除は `DELETE` です。リクエストとレスポンスの詳細は `/docs` を参照してください。
+
+### 取引作成の例
+
+先にカテゴリと支払い方法を作成し、それぞれのIDを指定します。
 
 ```bash
-# 名前空間と共有リソース
-kubectl apply -f k8s/shared/
-
-# バックエンド
-kubectl apply -f k8s/backend/
-
-# フロントエンド
-kubectl apply -f k8s/frontend/
+curl -X POST http://localhost:8000/transactions/ \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "date": "2026-01-08",
+    "category_id": 1,
+    "amount": 1500.00,
+    "memo": "ランチ代",
+    "payment_method_id": 1,
+    "repeat": {}
+  }'
 ```
 
-## Development
+## データモデル
 
-### Backend Development
+- **Category**: 名前、種別（収入・支出など）、表示色
+- **PaymentMethod**: 名前、説明
+- **Transaction**: 日付、カテゴリ、金額、メモ、支払い方法、繰り返し設定、レシートURL
 
-```bash
-cd backend
-pip install -r requirements.txt
-uvicorn main:app --reload
+詳細なフィールド定義は `backend/src/models/` を参照してください。
+
+## 開発・運用上の注意
+
+- テーブル作成は `create_all` による初期化です。Alembicのマイグレーションはまだ整備されていません。スキーマ変更の履歴管理や安全な更新が必要な環境には未対応です。
+- テストは未整備で、現在のテストコードには未定義のDBセッションなどの問題があります。テストが通ることを品質保証として扱わないでください。
+- Kubernetes用の設定ファイルはありますが、フロントエンドや参照先の共有設定などが揃っていないため、そのままデプロイできる状態ではありません。
+- 認証・認可は実装されていません。ネットワークに公開しないでください。
+
+## 主なディレクトリ
+
+```text
+backend/src/       FastAPIアプリ、モデル、ルーター
+backend/test/      テスト（未整備）
+k8s/               Kubernetes設定（未完成）
+docker-compose.yml 開発用バックエンド・PostgreSQL構成
 ```
 
-### Frontend Development
+## 次に取り組むこと
 
-```bash
-cd frontend
-npm install
-npm start
-```
+1. テスト用DBとfixtureを整備し、APIテストを実行可能にする
+2. AlembicによるDBマイグレーションを導入する
+3. 環境変数と開発用設定を整理する
+4. アプリの提供形態を決め、必要に応じて認証やフロントエンドを実装する
 
-## Environment Variables
-
-### Backend (.env)
-```env
-DEBUG=True
-HOST=0.0.0.0
-PORT=8000
-DATABASE_URL=postgresql://portfolio:portfolio@localhost:5432/portfolio
-REDIS_URL=redis://localhost:6379
-SECRET_KEY=your-secret-key-change-in-production
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-LOG_LEVEL=INFO
-```
-
-## Database Schema
-
-### Projects Table
-- id, title, description, technologies, github_url, demo_url, image_url
-- is_featured, is_active, created_at, updated_at
-
-### About Table
-- id, name, title, bio, email, github, linkedin, twitter
-- location, phone, resume_url, created_at, updated_at
-
-### Skills Table
-- id, name, category, level, is_active, created_at
-
-### Contacts Table
-- id, name, email, subject, message, is_read, created_at
-
-## Authentication
-
-API認証はJWTトークンを使用します。
-
-```bash
-# トークン取得（簡易版）
-curl -X POST "http://localhost:8000/api/auth/login" \
-  -H "Content-Type: application/json" \
-  -d '{"username": "admin", "password": "admin123"}'
-
-# 認証付きリクエスト
-curl -X GET "http://localhost:8000/api/projects" \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
-
-## Monitoring
-
-### Health Checks
-- Backend: `GET /health`
-- Database: PostgreSQL connection check
-- Cache: Redis connection check
-
-### Logs
-```bash
-# Docker Compose
-docker-compose logs -f backend
-docker-compose logs -f frontend
-
-# Kubernetes
-kubectl logs -f deployment/portfolio-backend -n portfolio
-kubectl logs -f deployment/portfolio-frontend -n portfolio
-```
-
-## Production Considerations
-
-1. **Security**: 本番環境では適切なSECRET_KEYを設定
-2. **Database**: 本番用データベースの設定
-3. **SSL/TLS**: HTTPS設定
-4. **Monitoring**: ログ監視とアラート設定
-5. **Backup**: データベースバックアップ戦略
-6. **Scaling**: 水平スケーリング設定
-
-## License
-
-MIT License
+タスクの詳細は [`TASK_ANALYSIS.md`](./TASK_ANALYSIS.md)、起動時の補足は [`QUICK_START_GUIDE.md`](./QUICK_START_GUIDE.md) を参照してください。
