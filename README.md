@@ -1,66 +1,69 @@
 # 家計簿アプリ（バックエンド）
 
-FastAPI・SQLModel・PostgreSQL で実装した、家計簿アプリのバックエンドAPIです。現在は取引・カテゴリ・支払い方法のCRUD APIを提供しています。リポジトリ名は `portfolio` ですが、ポートフォリオアプリではありません。
+FastAPI・SQLModel・PostgreSQL で実装した家計簿アプリのバックエンドAPIです。取引・カテゴリ・支払い方法のCRUD APIを提供します。
 
-> **開発段階:** 試作段階です。テスト環境、DBマイグレーション、認証、フロントエンドは未整備です。本番環境での利用を想定した状態ではありません。
+> **開発段階:** 試作段階です。認証やフロントエンドは未実装で、本番環境での利用は想定していません。
 
-## 実装済みの機能
+## 実装済み
 
-- 取引（Transaction）の作成・一覧・詳細・更新・削除
-- カテゴリ（Category）の作成・一覧・詳細・更新・削除
-- 支払い方法（PaymentMethod）の作成・一覧・詳細・更新・削除
-- `GET /health` によるヘルスチェック
-- FastAPIが生成するAPIドキュメント
-
-認証、ユーザー管理、集計・レポート、レシート画像のアップロード、フロントエンドは実装されていません。
+- 取引、カテゴリ、支払い方法の作成・一覧・詳細・更新・削除
+- 入力値の基本検証とDB制約違反へのHTTP 409応答
+- APIレスポンス用スキーマ、`GET /health`
+- AlembicによるDBスキーママイグレーション
 
 ## 技術構成
 
 - Python 3.11+
-- FastAPI、SQLModel / SQLAlchemy
+- FastAPI、SQLModel / SQLAlchemy、Alembic
 - PostgreSQL 16
 - Docker Compose
 
-## 起動方法（Docker Compose）
+## 起動（Docker Compose）
 
 Docker と Docker Compose がインストールされていることを確認し、リポジトリのルートで実行します。
 
 ```bash
+cp .env.example .env
 docker compose up --build
 ```
 
-APIとデータベースが起動したら、**初回のみ**テーブルを作成します。
-
-```bash
-docker compose exec backend python -m models.session create
-```
-
-アクセス先:
+ComposeがDBのヘルスチェックを待ち、バックエンド起動時に `alembic upgrade head` を実行してからAPIを開始します。
 
 - APIドキュメント: <http://localhost:8000/docs>
 - ヘルスチェック: <http://localhost:8000/health>
 - PostgreSQL: `localhost:5432`
 
-停止するには `Ctrl+C` を押します。バックグラウンドで起動した場合は `docker compose down` を実行してください。
+停止は `Ctrl+C`。バックグラウンド起動時は `docker compose down` を実行してください。データも削除する場合は `docker compose down -v` ですが、DBボリュームの内容は復元できないため注意してください。
 
-ComposeのDB接続情報は開発用です。`docker-compose.yml` に設定されている認証情報を本番環境で使用しないでください。
+`.env.example` の認証情報はローカル開発専用です。本番環境では強固な認証情報と秘密情報管理を設定してください。
 
-## APIエンドポイント
+## 既存データベースから移行する場合
 
-各リソースは一覧・詳細取得、作成、部分更新、削除のエンドポイントを持ちます。
+従来の `create_all` で作成済みのDBに対しては、そのまま `alembic upgrade head` を実行すると既存テーブルと衝突します。まずバックアップを取得してスキーマを確認し、初期マイグレーションの内容と一致することを確認した場合に限り、Alembicの履歴を登録します。
 
-| リソース | エンドポイント |
-| --- | --- |
-| 取引 | `/transactions/`、`/transactions/{transaction_id}` |
-| カテゴリ | `/categories/`、`/categories/{category_id}` |
-| 支払い方法 | `/payment_methods/`、`/payment_methods/{payment_method_id}` |
-| ヘルスチェック | `/health` |
+```bash
+cd backend
+# DATABASE_URLを対象DBに設定したうえで、既存スキーマを必ず確認してから実行
+alembic stamp 0001_initial
+alembic upgrade head
+```
 
-一覧・詳細取得は `GET`、作成は `POST`、部分更新は `PATCH`、削除は `DELETE` です。リクエストとレスポンスの詳細は `/docs` を参照してください。
+スキーマが初期マイグレーションと異なる場合は、データを保全したうえで差分マイグレーションを作成してください。`stamp` はテーブルを作成・検証する操作ではありません。
+
+## API
+
+| リソース | 一覧・作成 | 詳細・更新・削除 |
+| --- | --- | --- |
+| 取引 | `/transactions/` | `/transactions/{transaction_id}` |
+| カテゴリ | `/categories/` | `/categories/{category_id}` |
+| 支払い方法 | `/payment_methods/` | `/payment_methods/{payment_method_id}` |
+| ヘルスチェック | `/health` | — |
+
+一覧・詳細取得は `GET`、作成は `POST`（201）、部分更新は `PATCH`、削除は `DELETE`（`{"ok": true}`）です。一覧の `skip` は0以上、`limit` は1〜100です。不正な入力は422、対象なしは404、重複データや参照整合性違反は409を返します。具体的な項目は `/docs` を参照してください。
 
 ### 取引作成の例
 
-先にカテゴリと支払い方法を作成し、それぞれのIDを指定します。
+カテゴリと支払い方法を先に作成し、そのIDを指定します。
 
 ```bash
 curl -X POST http://localhost:8000/transactions/ \
@@ -75,35 +78,36 @@ curl -X POST http://localhost:8000/transactions/ \
   }'
 ```
 
-## データモデル
+## 環境変数
 
-- **Category**: 名前、種別（収入・支出など）、表示色
-- **PaymentMethod**: 名前、説明
-- **Transaction**: 日付、カテゴリ、金額、メモ、支払い方法、繰り返し設定、レシートURL
+Composeではルートの `.env` から設定します。ローカル実行時は `DATABASE_URL` を設定してください。
 
-詳細なフィールド定義は `backend/src/models/` を参照してください。
+- `DATABASE_URL`: SQLAlchemyのPostgreSQL接続URL（必須）
+- `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`: Compose DB用設定
+- `SQL_ECHO`: SQLログ出力（既定 `false`。開発時のみ有効化）
 
-## 開発・運用上の注意
+## ローカル開発
 
-- テーブル作成は `create_all` による初期化です。Alembicのマイグレーションはまだ整備されていません。スキーマ変更の履歴管理や安全な更新が必要な環境には未対応です。
-- テストは未整備で、現在のテストコードには未定義のDBセッションなどの問題があります。テストが通ることを品質保証として扱わないでください。
-- Kubernetes用の設定ファイルはありますが、フロントエンドや参照先の共有設定などが揃っていないため、そのままデプロイできる状態ではありません。
-- 認証・認可は実装されていません。ネットワークに公開しないでください。
-
-## 主なディレクトリ
-
-```text
-backend/src/       FastAPIアプリ、モデル、ルーター
-backend/test/      テスト（未整備）
-k8s/               Kubernetes設定（未完成）
-docker-compose.yml 開発用バックエンド・PostgreSQL構成
+```bash
+cd backend
+pip install -r requirements.txt
+export DATABASE_URL='postgresql://devuser:devpass@localhost:5432/finance_db'
+alembic upgrade head
+PYTHONPATH=src uvicorn main:app --reload
 ```
 
-## 次に取り組むこと
+スキーマ変更はモデルを更新したうえでAlembicリビジョンを作成・確認し、適用します。
 
-1. テスト用DBとfixtureを整備し、APIテストを実行可能にする
-2. AlembicによるDBマイグレーションを導入する
-3. 環境変数と開発用設定を整理する
-4. アプリの提供形態を決め、必要に応じて認証やフロントエンドを実装する
+```bash
+cd backend
+alembic revision --autogenerate -m "describe schema change"
+# 生成ファイルを確認・修正してから
+alembic upgrade head
+```
 
-タスクの詳細は [`TASK_ANALYSIS.md`](./TASK_ANALYSIS.md)、起動時の補足は [`QUICK_START_GUIDE.md`](./QUICK_START_GUIDE.md) を参照してください。
+## 注意事項
+
+- 認証・認可がないため、APIをインターネットに公開しないでください。
+- Composeはローカル開発用の既定認証情報を持ちます。本番用ではありません。
+- テストはまだ不十分で、DBテスト環境の整備が別途必要です。
+- `create_all` の旧ヘルパーは互換性のため残っていますが、新規環境の作成やスキーマ更新にはAlembicを使ってください。
